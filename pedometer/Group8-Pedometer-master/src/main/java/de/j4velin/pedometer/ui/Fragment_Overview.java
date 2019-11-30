@@ -428,7 +428,7 @@ public class Fragment_Overview extends Fragment implements SensorEventListener {
         SimpleDateFormat df = new SimpleDateFormat("E", Locale.getDefault());
         LineChart lineChart = (LineChart) getView().findViewById(R.id.linechart);
        // if (lineChart.getLineData() > 0) lineChart.clear();
-        int steps,temp=0;
+        int steps,temp;
         String [] days = new String[1000];
         float distance, stepsize = Fragment_Settings.DEFAULT_STEP_SIZE;
         boolean stepsize_cm = true;
@@ -445,31 +445,25 @@ public class Fragment_Overview extends Fragment implements SensorEventListener {
         List<Pair<Long, Integer>> last = db.getLastEntries(8);
         db.close();
 
-        for (int i = 6; i > 0; i--) {
+        for (int i = last.size() - 1; i > 0; i--) {
             Pair<Long, Integer> current = last.get(i);
             steps = current.second;
             if (steps > 0) {
                 if (showSteps) {
-                    numSteps.add(new Entry(days(i),steps+temp));
-                    temp=steps;
-                } else {
-                    distance = steps * stepsize;
-                    if (stepsize_cm) {
-                        distance /= 100000;
-                    } else {
-                        distance /= 5280;
-                    }
-                    distance = Math.round(distance * 1000) / 1000f; // 3 decimals
-                    numSteps.add(new Entry(days(i),distance+temp));
-                    temp= (int) distance;
+                    steps=steps+temp;
+                    numSteps.add(new Entry(days(i),steps));
                 }
             }
         }
         LineDataSet linedata = new LineDataSet(numSteps,"steps");
+        linedata.setDrawCircles(false);
+        linedata.setDrawValues(false);
         lineChart.setData(new LineData(linedata));
         lineChart.getXAxis().setDrawGridLines(false);
         lineChart.getAxisLeft().setDrawGridLines(false);
         lineChart.getAxisRight().setDrawGridLines(false);
+
+        lineChart.getLineData().getDataSets();
         if (!lineChart.isEmpty()) {
             lineChart.setOnClickListener(new OnClickListener() {
                 @Override
