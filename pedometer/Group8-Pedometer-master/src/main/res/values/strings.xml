@@ -62,4 +62,6 @@
     <string name="notification_settings">Notification settings</string>
     <string name="avg_title">Average</string>
     <string name="avg_summary">Average to be displayed on drop screen</string>
+    <string name="change_number_of_days_on_line_graph" />
+    <string name="Linegraph" />
 </resources>

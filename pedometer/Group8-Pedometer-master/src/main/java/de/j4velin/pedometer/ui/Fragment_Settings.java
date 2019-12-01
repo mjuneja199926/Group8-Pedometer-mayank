@@ -113,6 +113,10 @@ public class Fragment_Settings extends PreferenceFragment implements OnPreferenc
                 prefs.getFloat("stepsize_value", DEFAULT_STEP_SIZE),
                 prefs.getString("stepsize_unit", DEFAULT_STEP_UNIT)));
 
+        Preference linegraph = findPreference("numLine");
+        stepsize.setOnPreferenceClickListener(this);
+        stepsize.setSummary(getString(R.string.goal_summary, prefs.getInt("goal", DEFAULT_GOAL)));
+
         Preference avg = findPreference("avgSettings");
         avg.setOnPreferenceClickListener(this);
 

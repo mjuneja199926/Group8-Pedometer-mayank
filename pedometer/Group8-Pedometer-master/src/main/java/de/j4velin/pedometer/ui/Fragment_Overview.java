@@ -39,6 +39,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -52,6 +54,7 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -173,28 +176,6 @@ public class Fragment_Overview extends Fragment implements SensorEventListener {
      * Call this method if the Fragment should update the "steps"/"km" text in
      * the pie graph as well as the pie and the bars graphs.
      */
-    public int days(int day)
-    {
-        switch (day)
-        {
-            case 6:
-                return 1;
-            case 5:
-                return 2;
-            case 4:
-                return 3;
-            case 3:
-                return 4;
-            case 2:
-                return 5;
-            case 1:
-                return 6;
-            case 0:
-                return 7;
-            default:
-                return 0;
-        }
-    }
     private void stepsDistanceChanged() {
         if (showSteps) {
             ((TextView) getView().findViewById(R.id.unit)).setText(getString(R.string.steps));
@@ -425,22 +406,16 @@ public class Fragment_Overview extends Fragment implements SensorEventListener {
     }
 
     private void updateLine(){
-        SimpleDateFormat df = new SimpleDateFormat("E", Locale.getDefault());
+        Calendar cal = Calendar.getInstance();
+        int dom = cal.get(Calendar.DAY_OF_MONTH);
         LineChart lineChart = (LineChart) getView().findViewById(R.id.linechart);
-       // if (lineChart.getLineData() > 0) lineChart.clear();
-        int steps,temp;
+        int steps,temp=0;
         String [] days = new String[1000];
         float distance, stepsize = Fragment_Settings.DEFAULT_STEP_SIZE;
         boolean stepsize_cm = true;
         ArrayList <Entry> numSteps = new ArrayList<>();
-        if (!showSteps) {
-            // load some more settings if distance is needed
-            SharedPreferences prefs =
-                    getActivity().getSharedPreferences("pedometer", Context.MODE_PRIVATE);
-            stepsize = prefs.getFloat("stepsize_value", Fragment_Settings.DEFAULT_STEP_SIZE);
-            stepsize_cm = prefs.getString("stepsize_unit", Fragment_Settings.DEFAULT_STEP_UNIT)
-                    .equals("cm");
-        }
+        ArrayList <String> numDays = new ArrayList<>();
+
         Database db = Database.getInstance(getActivity());
         List<Pair<Long, Integer>> last = db.getLastEntries(8);
         db.close();
@@ -450,18 +425,26 @@ public class Fragment_Overview extends Fragment implements SensorEventListener {
             steps = current.second;
             if (steps > 0) {
                 if (showSteps) {
-                    steps=steps+temp;
-                    numSteps.add(new Entry(days(i),steps));
+                    steps=temp+steps;
+                    numSteps.add(new Entry(dom-i+1,steps));
+                    temp=steps;
                 }
             }
         }
         LineDataSet linedata = new LineDataSet(numSteps,"steps");
         linedata.setDrawCircles(false);
         linedata.setDrawValues(false);
+        YAxis rightYAxis = lineChart.getAxisRight();
+        YAxis yAxis = lineChart.getAxisLeft();
+        yAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
+        XAxis xAxis = lineChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        rightYAxis.setEnabled(false);
         lineChart.setData(new LineData(linedata));
         lineChart.getXAxis().setDrawGridLines(false);
         lineChart.getAxisLeft().setDrawGridLines(false);
         lineChart.getAxisRight().setDrawGridLines(false);
+        lineChart.getDescription().setEnabled(false);
 
         lineChart.getLineData().getDataSets();
         if (!lineChart.isEmpty()) {
